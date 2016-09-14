@@ -128,3 +128,6 @@ STATICFILES_DIRS = (
 )
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
+
+# Организация-супервизор
+ORG_SUPERVISOR_PK = 1
