@@ -51,7 +51,10 @@ class PitMaterial(models.Model):
         verbose_name_plural = _(u'Материалы карьеров')
 
     def __str__(self):
-        return self.name
+        return u"%s:%s" % (
+            self.pit.name,
+            self.material.name,
+        )
 
     def price_ton(self):
         return self.price/self.density
@@ -73,7 +76,12 @@ class Demand(models.Model):
         verbose_name_plural = _(u'Потребности в материалах')
 
     def __str__(self):
-        return self.name
+        return u"%s:%s, %s - %s" % (
+            self.customer.name,
+            self.material.name,
+            self.start_date,
+            self.end_date,
+        )
 
     def days_to_deliver(self):
         return (self.end_date - self.start_date).days + 1
