@@ -62,6 +62,7 @@ class PitMaterial(models.Model):
 @python_2_unicode_compatible
 class Demand(models.Model):
 
+    dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
     customer = models.ForeignKey('users.Org', verbose_name=_(u"Организация-заказчик"))
     material = models.ForeignKey('pits.Material', verbose_name=_(u"Материал"))
     fraction = models.CharField(_(u"Фракция"), max_length=255, blank=True, default='')
@@ -74,6 +75,7 @@ class Demand(models.Model):
     class Meta:
         verbose_name = _(u'Потребность в материале')
         verbose_name_plural = _(u'Потребности в материалах')
+        ordering = ('dt_created', )
 
     def __str__(self):
         return u"%s:%s, %s - %s" % (
