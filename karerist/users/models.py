@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+from LatLon import LatLon, Latitude, Longitude
+
 from django.db import models
 
 from django.conf import settings
@@ -48,3 +51,14 @@ class Location(models.Model):
                 lat=self.lat,
                 lng=self.lng,
             )
+
+    def distance_direct_to(self, location):
+        """
+        Расстояние по прямой до другого Location в км с округление до метра
+        """
+        this_loc = LatLon(Latitude(self.lat), Longitude(self.lng))
+        other_loc = LatLon(Latitude(location.lat), Longitude(location.lng))
+        return round(this_loc.distance(other_loc), 3)
+
+    # Пока не сделали рассояние по дорогам, пусть будет так:
+    distance_to = distance_direct_to
