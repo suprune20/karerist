@@ -1,19 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render
+from django.views.generic import TemplateView
 
-from django.http import HttpResponse
-from django.views import View
-
-class MyView(View):
+class CalculateView(TemplateView):
     template_name = 'calculate.html'
-
-    def get(self, request, *args, **kwargs):
-        context = dict()
-        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         context = dict(f='123')
-        return render(request, self.template_name, context)
+        return super(CalculateView, self).render_to_response(context)
 
-calculate = MyView.as_view()
+calculate = CalculateView.as_view()
