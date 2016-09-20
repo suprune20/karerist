@@ -103,6 +103,8 @@ class Demand(models.Model):
     def date_volumes(self):
         """
         Сколько нужно поставлять по дням
+
+        dict(date=..., volume=...)
         """
         dates = self.dates_to_deliver()
         n_days = len(dates)
@@ -125,15 +127,15 @@ class Demand(models.Model):
         """
         Список карьеров потребности, с затребованным материалом, сортированный по расстоянию
 
-        dict(pit=pit, distance=distance)
+        dict(pit=pit, pitmaterial=pitmaterial, distance=distance)
         """
-        pits = [ pm.pit for pm in PitMaterial.objects.filter(
+        pms = [ (pm, pm.pit,) for pm in PitMaterial.objects.filter(
                     material=self.material,
                     fraction=self.fraction,
                     solidity=self.solidity,
         )]
-        result = [ dict(pit=pit, distance=self.address.distance_to(pit.address)) \
-                    for pit in pits ]
+        result = [ dict(pit=pm[1], pitmaterial=pm[0], distance=self.address.distance_to(pm[1].address)) \
+                    for pm in pms ]
         return sorted(result, key=lambda result_dict: result_dict['distance'])
 
 @python_2_unicode_compatible
@@ -145,6 +147,10 @@ class DemandResult(models.Model):
     pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
     volume = models.PositiveIntegerField(_(u"Объем за дату"))
 
+    class Meta:
+        verbose_name = _(u'Результат по потребностям')
+        verbose_name_plural = _(u'Результаты по потребностям')
+
     def __str__(self):
         return u"%s" % self.dt_created
 
@@ -155,6 +161,10 @@ class DemandRemain(models.Model):
     date = models.DateField(_(u"Дата"))
     pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
     volume = models.PositiveIntegerField(_(u"Остаток за дату"))
+
+    class Meta:
+        verbose_name = _(u'Остатки по потребностям')
+        verbose_name_plural = _(u'Остатки по потребностям')
 
     def __str__(self):
         return u"%s" % self.dt_created
