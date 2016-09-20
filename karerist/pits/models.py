@@ -40,11 +40,11 @@ class PitMaterial(models.Model):
 
     pit = models.ForeignKey('pits.Pit', verbose_name=_(u"Карьер"))
     material = models.ForeignKey('pits.Material', verbose_name=_(u"Материал"))
-    density = models.DecimalField(_(u"Плотность"), max_digits=10, decimal_places=3)
+    density = models.DecimalField(_(u"Плотность"), max_digits=8, decimal_places=2)
     fraction = models.CharField(_(u"Фракция"), max_length=255, blank=True, default='')
     solidity = models.CharField(_(u"Прочность"), max_length=255, blank=True, default='')
     price = models.DecimalField(_(u"Цена за метр кубический"), max_digits=20, decimal_places=2)
-    capacity = models.DecimalField(_(u"Объем в день, м3"), max_digits=20, decimal_places=3)
+    capacity = models.PositiveIntegerField(_(u"Объем в день, м3"))
 
     class Meta:
         verbose_name = _(u'Материал карьера')
@@ -67,7 +67,7 @@ class Demand(models.Model):
     material = models.ForeignKey('pits.Material', verbose_name=_(u"Материал"))
     fraction = models.CharField(_(u"Фракция"), max_length=255, blank=True, default='')
     solidity = models.CharField(_(u"Прочность"), max_length=255, blank=True, default='')
-    volume = models.DecimalField(_(u"Объем"), max_digits=20, decimal_places=3)
+    volume = models.PositiveIntegerField(_(u"Объем"))
     start_date = models.DateField(_(u"Дата начала"))
     end_date = models.DateField(_(u"Дата окончания"))
     address = models.ForeignKey('users.Location', verbose_name=_(u"Адрес доставки"))
@@ -87,3 +87,26 @@ class Demand(models.Model):
 
     def days_to_deliver(self):
         return (self.end_date - self.start_date).days + 1
+
+@python_2_unicode_compatible
+class DemandResult(models.Model):
+
+    dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
+    date = models.DateField(_(u"Дата"))
+    demand = models.ForeignKey('pits.Demand', verbose_name=_(u"Потребность"))
+    pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
+    volume = models.PositiveIntegerField(_(u"Объем за дату"))
+
+    def __str__(self):
+        return u"%s" % self.dt_created
+
+@python_2_unicode_compatible
+class DemandRemain(models.Model):
+
+    dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
+    date = models.DateField(_(u"Дата"))
+    pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
+    volume = models.PositiveIntegerField(_(u"Остаток за дату"))
+
+    def __str__(self):
+        return u"%s" % self.dt_created
