@@ -123,14 +123,18 @@ class Demand(models.Model):
 
     def pits_available_all(self):
         """
-        Список карьеров, где имеется затребованный материал, сортированный по расстоянию
+        Список карьеров потребности, с затребованным материалом, сортированный по расстоянию
+
+        dict(pit=pit, distance=distance)
         """
         pits = [ pm.pit for pm in PitMaterial.objects.filter(
                     material=self.material,
                     fraction=self.fraction,
                     solidity=self.solidity,
         )]
-        return pits
+        result = [ dict(pit=pit, distance=self.address.distance_to(pit.address)) \
+                    for pit in pits ]
+        return sorted(result, key=lambda result_dict: result_dict['distance'])
 
 @python_2_unicode_compatible
 class DemandResult(models.Model):
