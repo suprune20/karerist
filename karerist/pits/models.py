@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+import datetime
+
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
@@ -61,6 +63,7 @@ class PitMaterial(models.Model):
 
 @python_2_unicode_compatible
 class Demand(models.Model):
+    MSG_INVALID_DAYS = _(u"Дата начала больше даты окончания")
 
     dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
     customer = models.ForeignKey('users.Org', verbose_name=_(u"Организация-заказчик"))
@@ -85,8 +88,36 @@ class Demand(models.Model):
             self.end_date,
         )
 
-    def days_to_deliver(self):
-        return (self.end_date - self.start_date).days + 1
+    def dates_to_deliver(self):
+        if self.end_date < self.start_date:
+            raise ValueError(self.MSG_INVALID_DAYS)
+        date = self.start_date
+        result = [date, ]
+        while date <= self.end_date:
+            date += datetime.timedelta(days=1)
+            result.append(date)
+        return result
+
+    def date_volumes(self):
+        """
+        Сколько нужно поставлять по дням
+        """
+        dates = self.dates_to_deliver()
+        n_days = len(dates)
+        average = self.volume // n_days
+        result = [dict(date=d, volume=average) for d in dates]
+        # Не всегда потребность распределятся нацело на дни
+        # Путь self.volume = 8, а дней - 3. Делим нацело, на каждый день 2
+        # 2*3 = 6. Надо раскидать оставшиеся 2 по дням, так чтобы
+        # 1-й день: 3, 2-й день: 3, 3-й день: 2
+        diff = average * n_days - self.volume
+        diff_d = diff
+        i = 0
+        while diff_d < 0:
+            result[i]['volume'] += 1
+            i += 1
+            diff_d += 1
+        return result
 
 @python_2_unicode_compatible
 class DemandResult(models.Model):
