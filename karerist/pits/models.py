@@ -52,7 +52,7 @@ class PitMaterial(models.Model):
     class Meta:
         verbose_name = _(u'Материал карьера')
         verbose_name_plural = _(u'Материалы карьеров')
-        unique_together = ('pit', 'material', 'density', 'fraction', 'solidity',)
+        unique_together = ('pit', 'material', 'fraction', 'solidity',)
 
     def __str__(self):
         return u"%s:%s" % (
@@ -123,9 +123,14 @@ class Demand(models.Model):
 
     def pits_available_all(self):
         """
-        Список крьеров, где имеется затребованный материал
+        Список карьеров, где имеется затребованный материал, сортированный по расстоянию
         """
-        pass
+        pits = [ pm.pit for pm in PitMaterial.objects.filter(
+                    material=self.material,
+                    fraction=self.fraction,
+                    solidity=self.solidity,
+        )]
+        return pits
 
 @python_2_unicode_compatible
 class DemandResult(models.Model):
