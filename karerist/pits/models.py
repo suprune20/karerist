@@ -7,6 +7,7 @@ import datetime
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
+from django.db.models.query_utils import Q
 
 # Create your models here.
 
@@ -51,6 +52,7 @@ class PitMaterial(models.Model):
     class Meta:
         verbose_name = _(u'Материал карьера')
         verbose_name_plural = _(u'Материалы карьеров')
+        unique_together = ('pit', 'material', 'density', 'fraction', 'solidity',)
 
     def __str__(self):
         return u"%s:%s" % (
@@ -118,6 +120,12 @@ class Demand(models.Model):
             i += 1
             diff_d += 1
         return result
+
+    def pits_available_all(self):
+        """
+        Список крьеров, где имеется затребованный материал
+        """
+        pass
 
 @python_2_unicode_compatible
 class DemandResult(models.Model):
