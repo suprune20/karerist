@@ -157,8 +157,8 @@ class PitLoad(models.Model):
     volume = models.PositiveIntegerField(_(u"Объем за дату"))
 
     class Meta:
-        verbose_name = _(u'Результат по потребностям')
-        verbose_name_plural = _(u'Результаты по потребностям')
+        verbose_name = _(u'Загрука карьеров')
+        verbose_name_plural = _(u'Загрука карьеров')
 
     def __str__(self):
         return u"%s" % self.dt_created
@@ -172,8 +172,8 @@ class PitRemain(models.Model):
     volume = models.PositiveIntegerField(_(u"Остаток за дату"))
 
     class Meta:
-        verbose_name = _(u'Остатки по потребностям')
-        verbose_name_plural = _(u'Остатки по потребностям')
+        verbose_name = _(u'Остатки по карьерам')
+        verbose_name_plural = _(u'Остатки по карьерам')
 
     def __str__(self):
         return u"%s" % self.dt_created
