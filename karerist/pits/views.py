@@ -92,7 +92,8 @@ class CalculateView(TemplateView):
         #
         pitmaterials = [ PitMaterial.objects.get(pk=pm) \
                          for pm in PitLoad.objects.order_by(
-                             'pitmaterial__pit__name', 'pitmaterial__material__name').values_list(
+                             'pitmaterial__pit__name', 'pitmaterial__material__name',
+                             'pitmaterial__fraction', 'pitmaterial__solidity').values_list(
                                  'pitmaterial', flat=True
                                  ).distinct()
         ]
@@ -109,9 +110,9 @@ class CalculateView(TemplateView):
                         pitmaterial=pitmaterial,volume__gt=0).order_by('demand'). \
                         values_list('demand', flat=True).distinct()
             ]
+            pitmaterial_c['demands'] = demands
             for date in dates:
                 datec = dict(date=date, taken=0, remain=pitmaterial.capacity, volumes=[])
-                pitmaterial_c['dates'].append(datec)
                 for demand in demands:
                     try:
                         vol_in_demand = PitLoad.objects.get(
@@ -124,7 +125,8 @@ class CalculateView(TemplateView):
                     datec['taken'] += vol_in_demand
                     datec['remain'] -= vol_in_demand
                     datec['volumes'].append(vol_in_demand)
-        outp.append(pitmaterial_c)
+                pitmaterial_c['dates'].append(datec)
+            outp.append(pitmaterial_c)
 
         context = dict(outc=outc, outp=outp)
         return super(CalculateView, self).render_to_response(context)

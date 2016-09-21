@@ -35,28 +35,79 @@
         </th>
     </tr>
     {% for date in demand.dates %}
-    <tr>
-        <td>
-            {{ date.date }}
-        </td>
-        {% for vol in date.volumes %}
+        <tr>
             <td>
-            {{ vol }}
+                {{ date.date|date:"d.m.Y" }}
             </td>
-        {% endfor %}
-        <td>
-        {{ date.need }} / 
-        {% if date.not_satisfied %}
-            <b>
-        {% endif %}
-        {{ date.not_satisfied }}
-        {% if date.not_satisfied %}
-            </b>
-        {% endif %}
-        </td>
-    </tr>
+            {% for vol in date.volumes %}
+                <td>
+                {{ vol }}
+                </td>
+            {% endfor %}
+            <td>
+            {{ date.need }} / 
+            {% if date.not_satisfied %}
+                <b>
+            {% endif %}
+            {{ date.not_satisfied }}
+            {% if date.not_satisfied %}
+                </b>
+            {% endif %}
+            </td>
+        </tr>
     {% endfor %}
     </table>
+{% endfor %}
+
+{% if outp %}
+    <h2>Результат для карьеров</h2>
+{% endif %}
+
+{% for pitmaterial in outp %}
+    <i>(Карьер:Материал) </i><big><b>{{ pitmaterial.pitmaterial}}</b></big><br /><br />
+    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <tr>
+        <th>
+            Дата
+        </th>
+        <th>
+            Мощность
+        </th>
+        {% for demand in pitmaterial.demands %}
+            <th>
+                {{ demand }}
+            </th>
+        {% endfor %}
+        <th>
+            Всего взято
+        </th>
+        <th>
+            Остаток
+        </th>
+    </tr>
+    {% for date in pitmaterial.dates %}
+        <tr>
+            <td>
+                {{ date.date|date:"d.m.Y" }}
+            </td>
+            <td>
+                {{ pitmaterial.pitmaterial.capacity }}
+            </td>
+            {% for vol in date.volumes %}
+                <td>
+                {{ vol }}
+                </td>
+            {% endfor %}
+            <td>
+                {{ date.taken }}
+            </td>
+            <td>
+                {{ date.remain }}
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br />
 {% endfor %}
 
 </html>

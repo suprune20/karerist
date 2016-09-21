@@ -104,7 +104,7 @@ class Demand(models.Model):
             raise ValueError(self.MSG_INVALID_DAYS)
         date = self.start_date
         result = [date, ]
-        while date <= self.end_date:
+        while date < self.end_date:
             date += datetime.timedelta(days=1)
             result.append(date)
         return result
