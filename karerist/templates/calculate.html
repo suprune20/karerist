@@ -1,10 +1,62 @@
-{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
 
-<h1>{% trans "Расчет" %}</h1>
+<h1>Расчет</h1>
 <form method="post" action="">
     {% csrf_token %}
     <p>
         <input type="submit" value="рассчитать" />
     </p>
 </form>
-{{ f }}
+
+{% if outc %}
+    <h2>Результат для заказчиков</h2>
+{% endif %}
+
+{% for demand in outc %}
+    <h4>Потребность: {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
+    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <tr>
+        <th>
+            Дата
+        </th>
+        {% for pit in demand.pits %}
+            <th>
+                {{ pit.pit }}<br />
+                {{ pit.distance }} км.<br />
+                {{ pit.pitmaterial.capacity }} кбм/день.<br />
+            </th>
+        {% endfor %}
+        <th>
+            Нужно/Не удовлетворено
+        </th>
+    </tr>
+    {% for date in demand.dates %}
+    <tr>
+        <td>
+            {{ date.date }}
+        </td>
+        {% for vol in date.volumes %}
+            <td>
+            {{ vol }}
+            </td>
+        {% endfor %}
+        <td>
+        {{ date.need }} / 
+        {% if date.not_satisfied %}
+            <b>
+        {% endif %}
+        {{ date.not_satisfied }}
+        {% if date.not_satisfied %}
+            </b>
+        {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+{% endfor %}
+
+</html>

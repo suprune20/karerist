@@ -8,7 +8,6 @@ class CalculateView(TemplateView):
     template_name = 'calculate.html'
 
     def post(self, request, *args, **kwargs):
-        context = dict(f='123')
         PitRemain.objects.all().delete()
         PitLoad.objects.all().delete()
         for demand in Demand.objects.all().order_by('dt_created'):
@@ -45,7 +44,7 @@ class CalculateView(TemplateView):
         #         volumes: [vol_pit1, vol_pit2 ...]
         #         total: сумма в карьерах
         #         need: потребность на дату
-        #         satisfied: total == need
+        #         not_satisfied: total - need
         # [
         for demand in Demand.objects.all().order_by('dt_created'):
             demandc = dict(demand=demand)
@@ -72,10 +71,11 @@ class CalculateView(TemplateView):
                     date['total'] += vol_in_pit
                     volumes.append(vol_in_pit)
                 date['volumes'] = volumes
-                date['satisfied'] = date['total'] >= date['need']
+                date['not_satisfied'] = date['need'] - date['total']
                 demandc['dates'].append(date)
             outc.append(demandc)
 
+        context = dict(outc=outc)
         return super(CalculateView, self).render_to_response(context)
 
 calculate = CalculateView.as_view()

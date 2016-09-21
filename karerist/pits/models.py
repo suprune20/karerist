@@ -83,9 +83,10 @@ class Demand(models.Model):
         ordering = ('dt_created', )
 
     def __str__(self):
-        return u"%s:%s, %s - %s" % (
+        return u"%s:%s, %s кбм, %s - %s" % (
             self.customer.name,
             self.material.name,
+            self.volume,
             self.start_date,
             self.end_date,
         )
