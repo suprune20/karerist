@@ -139,7 +139,7 @@ class Demand(models.Model):
         return sorted(result, key=lambda result_dict: result_dict['distance'])
 
 @python_2_unicode_compatible
-class DemandResult(models.Model):
+class PitLoad(models.Model):
 
     dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
     date = models.DateField(_(u"Дата"))
@@ -155,7 +155,7 @@ class DemandResult(models.Model):
         return u"%s" % self.dt_created
 
 @python_2_unicode_compatible
-class DemandRemain(models.Model):
+class PitRemain(models.Model):
 
     dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
     date = models.DateField(_(u"Дата"))

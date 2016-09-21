@@ -2,15 +2,15 @@
 
 from django.views.generic import TemplateView
 
-from pits.models import Demand, DemandResult, DemandRemain
+from pits.models import Demand, PitLoad, PitRemain
 
 class CalculateView(TemplateView):
     template_name = 'calculate.html'
 
     def post(self, request, *args, **kwargs):
         context = dict(f='123')
-        DemandRemain.objects.all().delete()
-        DemandResult.objects.all().delete()
+        PitRemain.objects.all().delete()
+        PitLoad.objects.all().delete()
         for demand in Demand.objects.all().order_by('dt_created'):
             date_volumes = demand.date_volumes()
             pits = demand.pits_available_all()
@@ -19,7 +19,7 @@ class CalculateView(TemplateView):
                 for pit in pits:
                     # dict(pit=pit, pitmaterial=pitmaterial, distance=distance)
                     if dv['volume'] > 0:
-                        remain, created = DemandRemain.objects.get_or_create(
+                        remain, created = PitRemain.objects.get_or_create(
                             pitmaterial=pit['pitmaterial'],
                             date=dv['date'],
                             defaults=dict(
@@ -29,7 +29,7 @@ class CalculateView(TemplateView):
                         dv['volume'] -= this_volume
                         remain.volume -= this_volume
                         remain.save()
-                        DemandResult.objects.create(
+                        PitLoad.objects.create(
                             demand=demand,
                             date=dv['date'],
                             pitmaterial=pit['pitmaterial'],
@@ -62,12 +62,12 @@ class CalculateView(TemplateView):
                 volumes = []
                 for pit in pits:
                     try:
-                        vol_in_pit = DemandResult.objects.get(
+                        vol_in_pit = PitLoad.objects.get(
                             demand=demand,
                             date=dv['date'],
                             pitmaterial=pit['pitmaterial'],
                         ).volume
-                    except DemandResult.DoesNotExist:
+                    except PitLoad.DoesNotExist:
                         vol_in_pit = 0
                     date['total'] += vol_in_pit
                     volumes.append(vol_in_pit)
