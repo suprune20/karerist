@@ -57,11 +57,19 @@ class PitMaterial(models.Model):
     def __str__(self):
         return u"%s:%s" % (
             self.pit.name,
-            self.material.name,
+            self.material_str(),
         )
 
     def price_ton(self):
         return self.price/self.density
+
+    def material_str(self):
+        result = u"%s" % self.material.name
+        if self.fraction:
+            result += u", фр. %s" % self.fraction
+        if self.solidity:
+            result += u", пр. %s" % self.solidity
+        return result
 
 @python_2_unicode_compatible
 class Demand(models.Model):

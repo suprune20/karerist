@@ -2,7 +2,7 @@
 
 from django.views.generic import TemplateView
 
-from pits.models import Demand, PitLoad, PitRemain
+from pits.models import PitMaterial, Demand, PitLoad, PitRemain
 
 class CalculateView(TemplateView):
     template_name = 'calculate.html'
@@ -75,7 +75,58 @@ class CalculateView(TemplateView):
                 demandc['dates'].append(date)
             outc.append(demandc)
 
-        context = dict(outc=outc)
+
+        outp = []
+        # Вывод для карьеров: таблицы Карьер/Материал
+        # Находим в PitLoad все уникальные pitmaterial's
+        # Находим в PitLoad даты, когда были ненулевые загрузки
+        # Результат: список pitmaterials, в каждом из них:
+        # pitmaterial: ... (отсюда беру price и др.)
+        # demands: [] те потребности, которые были по этому pitmaterial
+        # dates: [
+        #   date:
+        #   taken: (взято по всем потребностям)
+        #   remain: остаток
+        #   volumes: [ по demands ]
+        # ]
+        #
+        pitmaterials = [ PitMaterial.objects.get(pk=pm) \
+                         for pm in PitLoad.objects.order_by(
+                             'pitmaterial__pit__name', 'pitmaterial__material__name').values_list(
+                                 'pitmaterial', flat=True
+                                 ).distinct()
+        ]
+        for pitmaterial in pitmaterials:
+            pitmaterial_c = dict(
+                pitmaterial=pitmaterial,
+                dates=[]
+            )
+            dates = [ date for date in PitLoad.objects.filter(
+                        pitmaterial=pitmaterial,volume__gt=0).order_by('date'). \
+                        values_list('date', flat=True).distinct()
+            ]
+            demands = [ Demand.objects.get(pk=demand) for demand in PitLoad.objects.filter(
+                        pitmaterial=pitmaterial,volume__gt=0).order_by('demand'). \
+                        values_list('demand', flat=True).distinct()
+            ]
+            for date in dates:
+                datec = dict(date=date, taken=0, remain=pitmaterial.capacity, volumes=[])
+                pitmaterial_c['dates'].append(datec)
+                for demand in demands:
+                    try:
+                        vol_in_demand = PitLoad.objects.get(
+                            pitmaterial=pitmaterial,
+                            date=date,
+                            demand=demand,
+                        ).volume
+                    except PitLoad.DoesNotExist:
+                        vol_in_demand = 0
+                    datec['taken'] += vol_in_demand
+                    datec['remain'] -= vol_in_demand
+                    datec['volumes'].append(vol_in_demand)
+        outp.append(pitmaterial_c)
+
+        context = dict(outc=outc, outp=outp)
         return super(CalculateView, self).render_to_response(context)
 
 calculate = CalculateView.as_view()
