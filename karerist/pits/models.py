@@ -159,6 +159,7 @@ class PitLoad(models.Model):
     class Meta:
         verbose_name = _(u'Загрука карьеров')
         verbose_name_plural = _(u'Загрука карьеров')
+        unique_together = ('date', 'demand', 'pitmaterial')
 
     def __str__(self):
         return u"%s" % self.dt_created
@@ -174,6 +175,66 @@ class PitRemain(models.Model):
     class Meta:
         verbose_name = _(u'Остатки по карьерам')
         verbose_name_plural = _(u'Остатки по карьерам')
+        unique_together = ('date', 'pitmaterial')
 
     def __str__(self):
         return u"%s" % self.dt_created
+
+@python_2_unicode_compatible
+class Truck(models.Model):
+
+    name = models.CharField(_(u"Название"), max_length=255)
+    org = models.ForeignKey('users.Org', verbose_name=_(u"Организация"))
+    capacity = models.PositiveIntegerField(_(u"Вместимость, кбм"))
+    trips = models.PositiveIntegerField(_(u"Число рейсов в день"))
+    price_tcbm = models.DecimalField(_(u"Цена за тонно-километр"), max_digits=20, decimal_places=2)
+
+    class Meta:
+        verbose_name = _(u'Грузовик')
+        verbose_name_plural = _(u'Грузовики')
+        unique_together = ('name', 'org')
+
+    def __str__(self):
+        return u"%s/%s" % (self.org.name, self.name,)
+
+@python_2_unicode_compatible
+class TruckLoad(models.Model):
+
+    dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
+    truck = models.ForeignKey('pits.Truck', verbose_name=_(u"Грузовик"))
+    date = models.DateField(_(u"Дата"))
+    demand = models.ForeignKey('pits.Demand', verbose_name=_(u"Потребность"))
+    pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
+    trips = models.PositiveIntegerField(_(u"Число рейсов а дату"))
+    volume = models.PositiveIntegerField(_(u"Сколько перевозит за день"))
+
+    class Meta:
+        verbose_name = _(u'Загрузка грузовика')
+        verbose_name_plural = _(u'Загрузки грузовиков')
+        unique_together = ('truck', 'date', 'demand', 'pitmaterial',)
+
+    def __str__(self):
+        return u"%s, truck=%s, demand=%s, trips=%s, vol=%s" % (
+            self.date,
+            self.truck,
+            self.demand,
+            self.trips,
+            self.volume
+        )
+
+@python_2_unicode_compatible
+class TruckRemain(models.Model):
+
+    dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
+    truck = models.ForeignKey('pits.Truck', verbose_name=_(u"Грузовик"))
+    date = models.DateField(_(u"Дата"))
+    trips = models.PositiveIntegerField(_(u"Число рейсов на дату осталось"))
+
+    class Meta:
+        verbose_name = _(u'Остаток загрузки грузовика')
+        verbose_name_plural = _(u'Остатки загрузки грузовиков')
+        unique_together = ('truck', 'date')
+
+    def __str__(self):
+        return u"%s" % self.dt_created
+
