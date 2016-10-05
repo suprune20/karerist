@@ -49,46 +49,57 @@ class CalculateView(TemplateView):
                         dv['volume'] -= this_volume
                         remain.volume -= this_volume
                         remain.save()
-                        PitLoad.objects.create(
-                            demand=demand,
-                            date=dv['date'],
-                            pitmaterial=pit['pitmaterial'],
-                            volume=this_volume,
-                        )
                         if this_volume > 0:
-                            # Найти грузовик(и) для перевозки объема this_volume
-                            # из этого карьера
-                            # - выбрать по мин цене тонно-км
-                            # - чтоб в TruckRemain стался не ноль рейсов для грузовика
-                            # - чтоб грузоподъемность грузовика была <= остатка
-                            try:
-                                truckremain = TruckRemain.objects.filter(
-                                    date=dv['date'],
-                                    trips__gt=0,
-                                    truck__capacity__lte=this_volume,
-                                    ).select_related('truck'). \
-                                    order_by('truck__price_tcbm')[0]
-                                truck = truckremain.truck
-                                trips = min(truckremain.trips, this_volume // truck.capacity)
-                                truckremain.trips -= trips
-                                truckremain.save()
-                                truck_volume = trips * truck.capacity
-                                truckload, created =TruckLoad.objects.get_or_create(
-                                    date=dv['date'],
-                                    truck=truck,
-                                    demand=demand,
-                                    pitmaterial=pit['pitmaterial'],
-                                    defaults=dict(
-                                        trips=trips,
-                                        volume=truck_volume,
-                                ))
-                                if not created:
-                                    truckload.trips += trips
-                                    truckload.volume += truck_volume
-                                    truckload.save()
-                            except IndexError:
-                                # Не остлось грузовиков для выполнения потребности на день
-                                pass
+                            PitLoad.objects.create(
+                                demand=demand,
+                                date=dv['date'],
+                                pitmaterial=pit['pitmaterial'],
+                                volume=this_volume,
+                                remains=this_volume,
+                            )
+
+        # сформированы pitLoads
+        # Найти грузовик(и) для перевозки объема this_volume
+        # из этого карьера
+        # - выбрать по мин цене тонно-км
+        # - чтоб в TruckRemain стался не ноль рейсов для грузовика
+        # - чтоб грузоподъемность грузовика была <= остатка
+        for pitload in PitLoad.objects.all().order_by('pk'):
+            while True:
+                try:
+                    truckremain = TruckRemain.objects.filter(
+                        date=pitload.date,
+                        trips__gt=0,
+                        truck__capacity__lte=pitload.remains,
+                        ).select_related('truck'). \
+                        order_by('truck__price_tcbm')[0]
+                    truck = truckremain.truck
+                    trips = min(truckremain.trips, pitload.remains // truck.capacity)
+                    truckremain.trips -= trips
+                    truckremain.save()
+                    truck_volume = trips * truck.capacity
+                    truckload, created =TruckLoad.objects.get_or_create(
+                        date=pitload.date,
+                        truck=truck,
+                        pitload=pitload,
+                        defaults=dict(
+                            trips=trips,
+                            volume=truck_volume,
+                    ))
+                    if not created:
+                        truckload.trips += trips
+                        truckload.volume += truck_volume
+                        truckload.save()
+                    # Сколько осталось в питлоаде. Если осталось, надо привлекать еще машины
+                    pitload.remains -= truck_volume
+                    pitload.save()
+                    
+                    #TODO Перебрать грузовики, пок не исчерпается pitLoad
+                    
+                except IndexError:
+                    # Не осталось грузовиков для выполнения потребности на день
+                    pass
+                break
 
         outc = []
         # Вывод для заказчика
@@ -182,6 +193,17 @@ class CalculateView(TemplateView):
                     datec['volumes'].append(vol_in_demand)
                 pitmaterial_c['dates'].append(datec)
             outp.append(pitmaterial_c)
+
+        outt = []
+        # Вывод загрузки грузовиков, по датам, рейсам и карьерам
+        # demand:
+        # dates: [ # число машин * 2, на каждую по (а) рейсы/объемы (б) карьер/материал
+        #   date:
+        #   truck:
+        #           trip:
+        #               trips:
+        #               volume:
+        # ]
 
         context = dict(outc=outc, outp=outp)
         return super(CalculateView, self).render_to_response(context)

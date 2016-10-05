@@ -155,10 +155,11 @@ class PitLoad(models.Model):
     demand = models.ForeignKey('pits.Demand', verbose_name=_(u"Потребность"))
     pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
     volume = models.PositiveIntegerField(_(u"Объем за дату"))
+    remains = models.PositiveIntegerField(_(u"Осталось перевезти грузовиками"))
 
     class Meta:
-        verbose_name = _(u'Загрука карьеров')
-        verbose_name_plural = _(u'Загрука карьеров')
+        verbose_name = _(u'Загрузка карьеров (pitLoad)')
+        verbose_name_plural = _(u'Загрука карьеров (pitLoads)')
         unique_together = ('date', 'demand', 'pitmaterial')
 
     def __str__(self):
@@ -203,21 +204,20 @@ class TruckLoad(models.Model):
     dt_created = models.DateTimeField(_(u"Дата/время создания"), auto_now_add=True)
     truck = models.ForeignKey('pits.Truck', verbose_name=_(u"Грузовик"))
     date = models.DateField(_(u"Дата"))
-    demand = models.ForeignKey('pits.Demand', verbose_name=_(u"Потребность"))
-    pitmaterial = models.ForeignKey('pits.PitMaterial', verbose_name=_(u"Материал карьера"))
+    pitload = models.ForeignKey('pits.PitLoad', verbose_name=_(u"Загрузка карьера"))
     trips = models.PositiveIntegerField(_(u"Число рейсов а дату"))
     volume = models.PositiveIntegerField(_(u"Сколько перевозит за день"))
 
     class Meta:
         verbose_name = _(u'Загрузка грузовика')
         verbose_name_plural = _(u'Загрузки грузовиков')
-        unique_together = ('truck', 'date', 'demand', 'pitmaterial',)
+        unique_together = ('truck', 'date', 'pitload',)
 
     def __str__(self):
         return u"%s, truck=%s, demand=%s, trips=%s, vol=%s" % (
             self.date,
             self.truck,
-            self.demand,
+            self.pitload.demand,
             self.trips,
             self.volume
         )
