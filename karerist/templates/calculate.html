@@ -110,4 +110,44 @@
     <br />
 {% endfor %}
 
+{% if outp %}
+    <h2>Гузовики ... Потребности ... Карьеры</h2>
+{% endif %}
+
+{% for tl in out_truck_pitload %}
+    <i>(Организация/Машина/) </i>
+    <big><b>
+        {{ tl.truck.org.name}} / {{ tl.truck.name}} /
+        {{ tl.truck.trips}} рейсов в день / {{ tl.truck.capacity}} кбм
+    </b></big>
+    <br /><br />
+    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <tr>
+        <th>
+            Дата
+        </th>
+        {% for demand_pit in tl.demand_pits %}
+            <th>
+                (п{{ demand_pit.demand.pk }}) - {{ demand_pit.pit.name }}
+            </th>
+        {% endfor %}
+    </tr>
+    {% for date in tl.dates %}
+        <tr>
+            <td>
+                {{ date.date }}
+            </td>
+            {% for load in date.loads %}
+                <td>
+                    {% if load %}
+                        {{ load.trips }} рейсов / {{ load.volume }} кбм
+                    {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </table>
+    <br />
+{% endfor %}
+
 </html>

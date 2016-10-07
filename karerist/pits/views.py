@@ -233,27 +233,21 @@ class CalculateView(TemplateView):
             demand_pits_dict = dict()
             for i, demand_pit in enumerate(demand_pits):
                 demand_pits_dict[(demand_pit['demand'], demand_pit['pit'])] = i
-            print demand_pits_dict
 
             truck_out['demand_pits'] = demand_pits
             truck_out['dates'] = []
             cur_date = None
             for tl in TruckLoad.objects.filter(truck=truck).order_by('date'):
                 if tl.date != cur_date:
-                    if cur_date is not None:
-                        truck_out['dates'].append(date)
                     cur_date = tl.date
                     date = dict(
                         date=cur_date,
-                        loads=[dict(trips=0, volume=0)] * len(demand_pits)
+                        loads=[None] * len(demand_pits)
                     )
+                    truck_out['dates'].append(date)
                 i = demand_pits_dict[(tl.pitload.demand, tl.pitload.pitmaterial.pit)]
-                date['loads'][i]['trips'] = tl.trips
-                date['loads'][i]['volume'] = tl.volume
-            if cur_date is not None:
-                truck_out['dates'].append(date)
+                date['loads'][i] = dict(trips=tl.trips, volume=tl.volume)
 
-            print "\n", truck_out
             out_truck_pitload.append(truck_out)
 
         context = dict(
