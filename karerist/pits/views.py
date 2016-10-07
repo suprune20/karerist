@@ -250,7 +250,52 @@ class CalculateView(TemplateView):
 
             out_truck_pitload.append(truck_out)
 
+        # Таблица потребности : грузовики
+        # п1-альянс   м1  м2
+        # 30.09.16    3   5
+        #
+        # п1-сигма    м1  м3
+        # 30.09.16    2   1
+        #
+        # out_demand_trucs :[
+        #   demand: demand
+        #   trucks:
+        #   dates: [
+        #       date:
+        #       trucks: [
+        #           trips:
+        #           volume:
+        #       ]
+        #   ]
+        # ]
+        
+        trucks = [truck for truck in Truck.objects.all().order_by('org__name', 'name')]
+        trucks_dict = dict()
+        for i, truck in enumerate(trucks):
+            trucks_dict[truck] = i
+
+        out_demand_trucs = []
+        for demand in Demand.objects.all().order_by('dt_created'):
+            out_demand = dict(demand=demand)
+            out_demand['dates'] = []
+            cur_date = None
+            for tl in TruckLoad.objects.filter(pitload__demand=demand).order_by('date'):
+                if tl.date != cur_date:
+                    cur_date = tl.date
+                    date = dict(
+                        date=cur_date,
+                        trucks=[None] * len(trucks)
+                    )
+                    out_demand['dates'].append(date)
+                i = trucks_dict[tl.truck]
+                date['trucks'][i] = dict(trips=tl.trips, volume=tl.volume)
+
+            print "\n", out_demand
+            out_demand_trucs.append(out_demand)
+                
+
         context = dict(
+            trucks=trucks,
             outc=outc,
             outp=outp,
             out_truck_pitload=out_truck_pitload
