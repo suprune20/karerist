@@ -111,7 +111,9 @@
     <br />
 {% endfor %}
 
-<h2>Гузовики ... Потребности ... Карьеры</h2>
+{% if out_truck_pitload %}
+    <h2>Гузовики ... Потребности ... Карьеры</h2>
+{% endif %}
 
 {% for tl in out_truck_pitload %}
     <i>(Организация/Машина/) </i>
@@ -149,7 +151,10 @@
     <br />
 {% endfor %}
 
-<h2>Потребности ... Грузовики</h2>
+{% if demand in out_demand_trucs %}
+    <h2>Потребности ... Грузовики</h2>
+{% endif %}
+
 
 {% for demand in out_demand_trucs %}
     <h4>Потребность: (п{{ demand.demand.pk }}) {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
