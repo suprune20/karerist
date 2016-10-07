@@ -17,7 +17,7 @@
 {% endif %}
 
 {% for demand in outc %}
-    <h4>Потребность: {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
+    <h4>Потребность: (п{{ demand.pk }}) {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
     <table width="100%" border=1 cellpadding=5 cellspacing=0 >
     <tr>
         <th>
@@ -75,7 +75,7 @@
         </th>
         {% for demand in pitmaterial.demands %}
             <th>
-                {{ demand }}
+                (п{{ demand.pk }})<br />{{ demand }}
             </th>
         {% endfor %}
         <th>

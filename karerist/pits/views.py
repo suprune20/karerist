@@ -3,9 +3,10 @@
 import datetime
 
 from django.db.models import Min, Max
+from django.db.models.aggregates import Count
 from django.views.generic import TemplateView
 
-from pits.models import PitMaterial, Demand, PitLoad, PitRemain, \
+from pits.models import Pit, PitMaterial, Demand, PitLoad, PitRemain, \
                         Truck, TruckLoad, TruckRemain
 
 class CalculateView(TemplateView):
@@ -93,13 +94,12 @@ class CalculateView(TemplateView):
                     # Сколько осталось в питлоаде. Если осталось, надо привлекать еще машины
                     pitload.remains -= truck_volume
                     pitload.save()
-                    
-                    #TODO Перебрать грузовики, пок не исчерпается pitLoad
+                    if pitload.remains == 0:
+                        break
                     
                 except IndexError:
                     # Не осталось грузовиков для выполнения потребности на день
-                    pass
-                break
+                    break
 
         outc = []
         # Вывод для заказчика
@@ -113,7 +113,7 @@ class CalculateView(TemplateView):
         #         not_satisfied: total - need
         # [
         for demand in Demand.objects.all().order_by('dt_created'):
-            demandc = dict(demand=demand)
+            demandc = dict(demand=demand, pk=demand.pk)
             pits = demand.pits_available_all()
             demandc['pits'] = pits
             demandc['dates'] = []
@@ -194,18 +194,73 @@ class CalculateView(TemplateView):
                 pitmaterial_c['dates'].append(datec)
             outp.append(pitmaterial_c)
 
-        outt = []
         # Вывод загрузки грузовиков, по датам, рейсам и карьерам
-        # demand:
-        # dates: [ # число машин * 2, на каждую по (а) рейсы/объемы (б) карьер/материал
-        #   date:
+        #   м1  
+        #                   (п1)-альянс (п1)-сигма  (п2)-сигма
+        #   30.09.16        3           2           1
+        #
+        # out_truck_pitload [
         #   truck:
-        #           trip:
-        #               trips:
-        #               volume:
+        #   demand_pits: [
+        #       demand:
+        #       pit
+        #   ]
+        #   dates: [
+        #       date:
+        #       loads:
+        #           [
+        #               trips: (рейсы для 1-й из demand-pit:)
+        #               volume: (объем для 1-й из demand-pit:)
+        #               ....
+        #           ]
+        #   ]
+        #
         # ]
+            
+        out_truck_pitload = []
+        for truck in Truck.objects.all().order_by('org__name', 'name'):
+            truck_out = dict(truck=truck)
+            demand_pits = [
+                dict(
+                    demand=Demand.objects.get(pk=item['pitload__demand']),
+                    pit=Pit.objects.get(pk=item['pitload__pitmaterial__pit']),
+                ) \
+                for item in TruckLoad.objects. \
+                                filter(truck=truck). \
+                                values('pitload__demand', 'pitload__pitmaterial__pit'). \
+                                annotate(c=Count('pk'))
+            ]
+            demand_pits_dict = dict()
+            for i, demand_pit in enumerate(demand_pits):
+                demand_pits_dict[(demand_pit['demand'], demand_pit['pit'])] = i
+            print demand_pits_dict
 
-        context = dict(outc=outc, outp=outp)
+            truck_out['demand_pits'] = demand_pits
+            truck_out['dates'] = []
+            cur_date = None
+            for tl in TruckLoad.objects.filter(truck=truck).order_by('date'):
+                if tl.date != cur_date:
+                    if cur_date is not None:
+                        truck_out['dates'].append(date)
+                    cur_date = tl.date
+                    date = dict(
+                        date=cur_date,
+                        loads=[dict(trips=0, volume=0)] * len(demand_pits)
+                    )
+                i = demand_pits_dict[(tl.pitload.demand, tl.pitload.pitmaterial.pit)]
+                date['loads'][i]['trips'] = tl.trips
+                date['loads'][i]['volume'] = tl.volume
+            if cur_date is not None:
+                truck_out['dates'].append(date)
+
+            print "\n", truck_out
+            out_truck_pitload.append(truck_out)
+
+        context = dict(
+            outc=outc,
+            outp=outp,
+            out_truck_pitload=out_truck_pitload
+        )
         return super(CalculateView, self).render_to_response(context)
 
 calculate = CalculateView.as_view()
