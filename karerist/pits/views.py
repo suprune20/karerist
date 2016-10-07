@@ -259,13 +259,13 @@ class CalculateView(TemplateView):
         #
         # out_demand_trucs :[
         #   demand: demand
-        #   trucks:
         #   dates: [
         #       date:
         #       trucks: [
         #           trips:
         #           volume:
         #       ]
+        #       volume
         #   ]
         # ]
         
@@ -284,21 +284,27 @@ class CalculateView(TemplateView):
                     cur_date = tl.date
                     date = dict(
                         date=cur_date,
-                        trucks=[None] * len(trucks)
+                        trucks=[None] * len(trucks),
+                        volume=0
                     )
                     out_demand['dates'].append(date)
                 i = trucks_dict[tl.truck]
-                date['trucks'][i] = dict(trips=tl.trips, volume=tl.volume)
+                if date['trucks'][i]:
+                    # мог съездить по одной потребности в два карьера
+                    date['trucks'][i]['trips'] += tl.trips
+                    date['trucks'][i]['volume'] += tl.volume
+                else:
+                    date['trucks'][i] = dict(trips=tl.trips, volume=tl.volume)
+                date['volume'] += tl.volume
 
-            print "\n", out_demand
             out_demand_trucs.append(out_demand)
-                
 
         context = dict(
             trucks=trucks,
             outc=outc,
             outp=outp,
-            out_truck_pitload=out_truck_pitload
+            out_truck_pitload=out_truck_pitload,
+            out_demand_trucs=out_demand_trucs,
         )
         return super(CalculateView, self).render_to_response(context)
 

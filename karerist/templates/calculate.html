@@ -18,6 +18,7 @@
 
 {% for demand in outc %}
     <h4>Потребность: (п{{ demand.pk }}) {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
+    <br />
     <table width="100%" border=1 cellpadding=5 cellspacing=0 >
     <tr>
         <th>
@@ -110,9 +111,7 @@
     <br />
 {% endfor %}
 
-{% if outp %}
-    <h2>Гузовики ... Потребности ... Карьеры</h2>
-{% endif %}
+<h2>Гузовики ... Потребности ... Карьеры</h2>
 
 {% for tl in out_truck_pitload %}
     <i>(Организация/Машина/) </i>
@@ -144,6 +143,49 @@
                     {% endif %}
                 </td>
             {% endfor %}
+        </tr>
+    {% endfor %}
+    </table>
+    <br />
+{% endfor %}
+
+<h2>Потребности ... Грузовики</h2>
+
+{% for demand in out_demand_trucs %}
+    <h4>Потребность: (п{{ demand.demand.pk }}) {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
+    <br />
+    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <tr>
+        <th>
+            Дата
+        </th>
+        {% for truck in trucks %}
+            <th>
+                {{ truck.org.name}}<br />
+                {{ truck.name}}
+            </th>
+        {% endfor %}
+        <th>
+            Перевезено<br />
+            кбм
+        </th>
+    </tr>
+    {% for date in demand.dates %}
+        <tr>
+            <td>
+                {{ date.date }}
+            </td>
+            {% for truck in date.trucks %}
+                <td>
+                    {% if truck %}
+                        {{ truck.trips }} рейсов<br />
+                        {{ truck.volume }} кбм
+                    {% endif %}
+                </td>
+            {% endfor %}
+            <td>
+                {{ date.volume }}
+            </td>
         </tr>
     {% endfor %}
     </table>
