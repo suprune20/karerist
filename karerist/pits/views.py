@@ -216,25 +216,24 @@ class CalculateView(TemplateView):
         #   ]
         #
         # ]
-            
+
+        demand_pits =[
+            dict(
+                demand=Demand.objects.get(pk=item['demand']),
+                pit=Pit.objects.get(pk=item['pitmaterial__pit']),
+            )
+            for item in PitLoad.objects. \
+                        values('demand', 'pitmaterial__pit'). \
+                        order_by('demand__pk', 'pitmaterial__pit__name'). \
+                            annotate(count=Count('pk'))
+        ]
+        demand_pits_dict = dict()
+        for i, demand_pit in enumerate(demand_pits):
+            demand_pits_dict[(demand_pit['demand'], demand_pit['pit'])] = i
+        
         out_truck_pitload = []
         for truck in Truck.objects.all().order_by('org__name', 'name'):
             truck_out = dict(truck=truck)
-            demand_pits = [
-                dict(
-                    demand=Demand.objects.get(pk=item['pitload__demand']),
-                    pit=Pit.objects.get(pk=item['pitload__pitmaterial__pit']),
-                ) \
-                for item in TruckLoad.objects. \
-                                filter(truck=truck). \
-                                values('pitload__demand', 'pitload__pitmaterial__pit'). \
-                                annotate(c=Count('pk'))
-            ]
-            demand_pits_dict = dict()
-            for i, demand_pit in enumerate(demand_pits):
-                demand_pits_dict[(demand_pit['demand'], demand_pit['pit'])] = i
-
-            truck_out['demand_pits'] = demand_pits
             truck_out['dates'] = []
             cur_date = None
             for tl in TruckLoad.objects.filter(truck=truck).order_by('date'):
@@ -250,7 +249,7 @@ class CalculateView(TemplateView):
 
             out_truck_pitload.append(truck_out)
 
-        # Таблица потребности : грузовики
+        # Таблица потребности-карьеры : грузовики
         # п1-альянс   м1  м2
         # 30.09.16    3   5
         #
@@ -300,6 +299,7 @@ class CalculateView(TemplateView):
             out_demand_trucs.append(out_demand)
 
         context = dict(
+            demand_pits=demand_pits,
             trucks=trucks,
             outc=outc,
             outp=outp,

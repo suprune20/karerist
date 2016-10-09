@@ -127,7 +127,7 @@
         <th>
             Дата
         </th>
-        {% for demand_pit in tl.demand_pits %}
+        {% for demand_pit in demand_pits %}
             <th>
                 (п{{ demand_pit.demand.pk }}) - {{ demand_pit.pit.name }}
             </th>
