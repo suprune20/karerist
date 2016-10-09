@@ -13,7 +13,7 @@
 </form>
 
 {% if outc %}
-    <h2>Результат для заказчиков</h2>
+    <hr /><h2>Результат для заказчиков</h2><hr />
 {% endif %}
 
 {% for demand in outc %}
@@ -58,10 +58,11 @@
         </tr>
     {% endfor %}
     </table>
+    <br />
 {% endfor %}
 
 {% if outp %}
-    <h2>Результат для карьеров</h2>
+    <hr /><h2>Результат для карьеров</h2><hr />
 {% endif %}
 
 {% for pitmaterial in outp %}
@@ -112,7 +113,7 @@
 {% endfor %}
 
 {% if out_truck_pitload %}
-    <h2>Гузовики ... Потребности ... Карьеры</h2>
+    <hr /><h2>Загрузка грузовиков по потребностям-карьерам (pitLoads)</h2><hr />
 {% endif %}
 
 {% for tl in out_truck_pitload %}
@@ -151,8 +152,8 @@
     <br />
 {% endfor %}
 
-{% if demand in out_demand_trucks %}
-    <h2>Потребности-карьеры ... Грузовики</h2>
+{% if out_demand_trucks %}
+    <hr /><h2>Загрузка карьеров по потребностям (pitLoads) по грузовикам</h2><hr />
 {% endif %}
 
 
