@@ -151,13 +151,13 @@
     <br />
 {% endfor %}
 
-{% if demand in out_demand_trucs %}
-    <h2>Потребности ... Грузовики</h2>
+{% if demand in out_demand_trucks %}
+    <h2>Потребности-карьеры ... Грузовики</h2>
 {% endif %}
 
 
-{% for demand in out_demand_trucs %}
-    <h4>Потребность: (п{{ demand.demand.pk }}) {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
+{% for demand_pit in out_demand_trucks %}
+    <h4>(п{{ demand_pit.demand_pit.demand.pk }}) - {{ demand_pit.demand_pit.pit.name }}</h4>
     <br />
     <table width="100%" border=1 cellpadding=5 cellspacing=0 >
     <tr>
@@ -175,7 +175,7 @@
             кбм
         </th>
     </tr>
-    {% for date in demand.dates %}
+    {% for date in demand_pit.dates %}
         <tr>
             <td>
                 {{ date.date }}

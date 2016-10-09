@@ -257,7 +257,7 @@ class CalculateView(TemplateView):
         # 30.09.16    2   1
         #
         # out_demand_trucs :[
-        #   demand: demand
+        #   demand_pit: demand_pit
         #   dates: [
         #       date:
         #       trucks: [
@@ -273,12 +273,15 @@ class CalculateView(TemplateView):
         for i, truck in enumerate(trucks):
             trucks_dict[truck] = i
 
-        out_demand_trucs = []
-        for demand in Demand.objects.all().order_by('dt_created'):
-            out_demand = dict(demand=demand)
-            out_demand['dates'] = []
+        out_demand_trucks = []
+        for demand_pit in demand_pits:
+            out_demand_pit = dict(demand_pit=demand_pit)
+            out_demand_pit['dates'] = []
             cur_date = None
-            for tl in TruckLoad.objects.filter(pitload__demand=demand).order_by('date'):
+            for tl in TruckLoad.objects.filter(
+                    pitload__demand=demand_pit['demand'],
+                    pitload__pitmaterial__pit=demand_pit['pit'],
+                ).order_by('date'):
                 if tl.date != cur_date:
                     cur_date = tl.date
                     date = dict(
@@ -286,17 +289,11 @@ class CalculateView(TemplateView):
                         trucks=[None] * len(trucks),
                         volume=0
                     )
-                    out_demand['dates'].append(date)
+                    out_demand_pit['dates'].append(date)
                 i = trucks_dict[tl.truck]
-                if date['trucks'][i]:
-                    # мог съездить по одной потребности в два карьера
-                    date['trucks'][i]['trips'] += tl.trips
-                    date['trucks'][i]['volume'] += tl.volume
-                else:
-                    date['trucks'][i] = dict(trips=tl.trips, volume=tl.volume)
+                date['trucks'][i] = dict(trips=tl.trips, volume=tl.volume)
                 date['volume'] += tl.volume
-
-            out_demand_trucs.append(out_demand)
+            out_demand_trucks.append(out_demand_pit)
 
         context = dict(
             demand_pits=demand_pits,
@@ -304,7 +301,7 @@ class CalculateView(TemplateView):
             outc=outc,
             outp=outp,
             out_truck_pitload=out_truck_pitload,
-            out_demand_trucs=out_demand_trucs,
+            out_demand_trucks=out_demand_trucks,
         )
         return super(CalculateView, self).render_to_response(context)
 
