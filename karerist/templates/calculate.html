@@ -1,9 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-</head>
+{% extends "base.html" %}
 
+{% load i18n %}
+
+{% block content %}
 <h1>Расчет</h1>
 <form method="post" action="">
     {% csrf_token %}
@@ -19,7 +18,7 @@
 {% for demand in outc %}
     <h4>Потребность: (п{{ demand.pk }}) {{ demand.demand }}, заявлена {{ demand.demand.dt_created }}</h4>
     <br />
-    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <table class="table table-bordered table-striped" >
     <tr>
         <th>
             Дата
@@ -67,7 +66,7 @@
 
 {% for pitmaterial in outp %}
     <i>(Карьер:Материал) </i><big><b>{{ pitmaterial.pitmaterial}}</b></big><br /><br />
-    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <table class="table table-bordered table-striped" >
     <tr>
         <th>
             Дата
@@ -123,7 +122,7 @@
         {{ tl.truck.trips}} рейсов в день / {{ tl.truck.capacity}} кбм
     </b></big>
     <br /><br />
-    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <table class="table table-bordered table-striped" >
     <tr>
         <th>
             Дата
@@ -160,7 +159,7 @@
 {% for demand_pit in out_demand_trucks %}
     <h4>(п{{ demand_pit.demand_pit.demand.pk }}) - {{ demand_pit.demand_pit.pit.name }}</h4>
     <br />
-    <table width="100%" border=1 cellpadding=5 cellspacing=0 >
+    <table class="table table-bordered table-striped" >
     <tr>
         <th>
             Дата
@@ -198,4 +197,4 @@
     <br />
 {% endfor %}
 
-</html>
+{% endblock %}
