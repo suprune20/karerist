@@ -3,3 +3,4 @@ local_settings.py
 ENV
 karerist/media
 karerist/static
+karerist/asset_src/
