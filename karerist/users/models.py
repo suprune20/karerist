@@ -8,6 +8,8 @@ from django.conf import settings
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
+from karerist.utils import capitalize
+
 @python_2_unicode_compatible
 class Org(models.Model):
 
@@ -31,6 +33,55 @@ class Org(models.Model):
 
     def is_supervisor(self):
         return str(self.pk) == str(settings.ORG_SUPERVISOR_PK)
+
+@python_2_unicode_compatible
+class Profile(models.Model):
+
+    user = models.OneToOneField('auth.User')
+    org = models.ForeignKey('users.Org')
+    last_name = models.CharField(_(u"Фамилия"), max_length=255, )
+    first_name = models.CharField(_(u"Имя"), max_length=255, blank=True, default='')
+    middle_name = models.CharField(_(u"Отчество"), max_length=255, blank=True, default='')
+    phones = models.TextField(_(u"Телефон(ы)"), blank=True, null=True)
+
+    class Meta:
+        verbose_name = _(u'Профиль')
+        verbose_name_plural = _(u'Профили')
+        ordering = ('last_name', 'first_name', 'middle_name', )
+
+    def __str__(self):
+        return self.full_name() or self.user.username or u'%s' % self.pk
+
+    def full_name(self, put_middle_name=True):
+        name = ""
+        if self.last_name:
+            name = self.last_name
+            if self.first_name:
+                name = u"{0} {1}".format(name, self.first_name)
+                if put_middle_name and self.middle_name:
+                    name = u"{0} {1}".format(name, self.middle_name)
+        if not name:
+            name = self.user.username
+        return name
+
+    def last_name_initials(self):
+        """
+        Фамилия И.О.
+        """
+        name = ""
+        if self.last_name:
+            name = self.last_name
+            if self.first_name:
+                name = u"{0} {1}.".format(name, self.first_name[0])
+                if self.middle_name:
+                    name = u"{0}{1}.".format(name, self.middle_name[0])
+        return name or self.user.username
+
+    def save(self, *args, **kwargs):
+        self.first_name = capitalize(self.first_name)
+        self.last_name = capitalize(self.last_name)
+        self.middle_name = capitalize(self.middle_name)
+        return super(Profile, self).save(*args, **kwargs)
 
 @python_2_unicode_compatible
 class Location(models.Model):

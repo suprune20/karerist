@@ -103,7 +103,7 @@
                                 <li class="dropdown">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                         <i class="icon-user icon-white"></i>
-                                        <b>{{ user.username }}</b>
+                                        <b>{% if user.profile %}{{ user.profile.last_name_initials }}{% else %}{{ user.username }}{% endif %}</b>
                                         <span class="caret"></span>
                                     </a>
                                     <ul class="dropdown-menu">
