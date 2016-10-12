@@ -86,6 +86,7 @@
                      });
                     </script>
                     <a class="brand" id="ellypsed_name_org" href="/">{% if user.profile.org.name %}{{ user.profile.org.name }}{% else %}Карьерист{% endif %}</a>
+                    {% comment %}
                     <div class="btn-group pull-right dropdown" id="support_menu">
                         <a data-toggle="dropdown" href="#support_menu" title="{% trans "Служба поддержки" %}"><img src="/static/help-question.png">
                         </a>
@@ -95,6 +96,7 @@
                             </li>
                         </ul>
                     </div>
+                    {% endcomment %}
                     <div class="pull-right">
                         {% if user.is_authenticated %}
                             <ul class="nav">
@@ -105,14 +107,16 @@
                                         <span class="caret"></span>
                                     </a>
                                     <ul class="dropdown-menu">
-                                        <li><a href="/admin">{% trans "Организация" %}</a></li>
-                                        <li class="divider"></li>
-                                        <li><a href="/admin">{% trans "Выйти" %}</a></li>
+                                        {% if user.is_superuser %}
+                                            <li><a href="/admin">{% trans "Администратору" %}</a></li>
+                                            <li class="divider"></li>
+                                        {% endif %}
+                                        <li><a href="{% url "ulogout" %}">{% trans "Выйти" %}</a></li>
                                     </ul>
                                 </li>
                             </ul>
                         {% else %}
-                            <a class="btn" href="/admin">{% trans "Войти" %}</a>
+                            <a class="btn" href="{% url "ulogin" %}">{% trans "Войти" %}</a>
                         {% endif %}
                     </div>
                     {% comment %}

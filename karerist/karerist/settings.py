@@ -50,6 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'karerist.middleware.LoginRequiredMiddleware',
+
 ]
 
 ROOT_URLCONF = 'karerist.urls'
@@ -135,3 +137,6 @@ STATIC_URL = '/static/'
 
 # Организация-супервизор
 ORG_SUPERVISOR_PK = 1
+
+LOGIN_URL = "/login/"
+LOGOUT_URL = "/logout/"
