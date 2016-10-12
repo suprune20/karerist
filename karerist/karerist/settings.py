@@ -140,3 +140,8 @@ ORG_SUPERVISOR_PK = 1
 
 LOGIN_URL = "/login/"
 LOGOUT_URL = "/logout/"
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
